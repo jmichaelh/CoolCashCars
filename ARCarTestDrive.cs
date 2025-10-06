@@ -2,17 +2,35 @@ using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using UnityEngine.Networking;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.XR.ARFoundation;
 
 public class ARCarTestDrive : MonoBehaviour
 {
-    public GameObject carModel; // Assign 3D car prefab from Edmunds API export
+    public GameObject carModel;
     private ARRaycastManager raycastManager;
-    private TrackableType trackableType = TrackableType.PlaneWithinPolygon;
-
+    private TrackableType trackableType = TrackableType.PlaneWithinPolygonu;
+    
     void Start()
     {
         raycastManager = FindObjectOfType<ARRaycastManager>();
         carModel.SetActive(false);
+        StartCoroutine(LoadCarSpecs("Camry"));
+    }
+
+    IEnumerator LoadCarSpecs(string model)
+    {
+        using (UnityWebRequest www = UnityWebRequest.Get($"https://carapi.app/api/v1/vehicles/search?model={model}"))
+        {
+            yield return www.SendWebRequest();
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                string json = www.downloadHandler.text;
+                // Parse JSON (e.g., SimpleJSON), set carModel properties
+                Debug.Log("Loaded specs: " + json);
+            }
+        }
     }
 
     void Update()
@@ -21,12 +39,12 @@ public class ARCarTestDrive : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
-            if (raycastManager.Raycast(touch.position, hits, trackableType))
+            if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
             {
                 Pose hitPose = hits[0].pose;
-                // Before Instantiate, fetch specs via REST (use UnityWebRequest)
-
-               IEnumerator LoadCarSpecs(string model) {
+                Instantiate(carModel, hitPose.position, hitPose.rotation);
+                // Animate with LeanTween for shine
+                IEnumerator LoadCarSpecs(string model) {
                  using (UnityWebRequest www = UnityWebRequest.Get($"https://carapi.app/api/v1/vehicles/search?model={model}")) {
                   yield return www.SendWebRequest();
              if (www.result == UnityWebRequest.Result.Success) {
