@@ -1,6 +1,6 @@
 
 name = "coolcc"
 compatibility_date = "2025-10-06"
-assets = "{ directory = ./dist }"
+main = "App.tsx"
     
 
