@@ -1,6 +1,8 @@
 
-name = "coolcc"
+name = "cool-cash-cars"
+main = "worker.js"
 compatibility_date = "2025-10-06"
-main = "App.tsx"
-    
+
+[site]
+bucket = "./dist" # Vite build output
 
