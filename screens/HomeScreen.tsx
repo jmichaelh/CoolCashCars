@@ -1,9 +1,8 @@
- import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, FadeIn } from 'react-native-reanimated';
-import LottieView from 'lottie-react-native';
-import { ApiContext } from '../App'; // From above
+import { ApiContext } from '../App';
 
 const HomeScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useState({ make: '', model: '', year: '' });
@@ -22,7 +21,7 @@ const HomeScreen: React.FC = () => {
     setLoading(true);
     try {
       const data = await fetchVehicles(searchParams);
-      setVehicles(data || []); // Assumes array response, e.g., [{ id, make, model, year, price_estimate, specs }]
+      setVehicles(data || []);
     } catch (error) {
       console.error('CarAPI Error:', error);
     }
@@ -46,7 +45,7 @@ const HomeScreen: React.FC = () => {
         onChangeText={(text) => setSearchParams({ ...searchParams, make: text.split('/')[0] || '' })}
         placeholderTextColor="#007BFF"
       />
-      {loading ? <LottieView source={require('../assets/shimmer.json')} autoPlay loop style={styles.loader} /> : null}
+      {loading ? <ActivityIndicator size="large" color="#007BFF" style={styles.loader} /> : null}
       <FlatList
         data={vehicles}
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
@@ -54,19 +53,32 @@ const HomeScreen: React.FC = () => {
           <Animated.View style={[styles.card, animatedStyle]} entering={FadeIn.duration(300)}>
             <Image source={{ uri: item.image || 'https://via.placeholder.com/300x200?text=Car' }} style={styles.image} />
             <Text style={styles.title}>{item.make} {item.model} ({item.year})</Text>
-            <Text style={styles.specs}>Engine: {item.engine || 'N/A'}</Text> {/* From CarAPI specs */}
+            <Text style={styles.specs}>Engine: {item.engine || 'N/A'}</Text>
             <Text style={styles.price}>${item.price_estimate || 'Contact Dealer'} <Text style={styles.green}>Deal!</Text></Text>
             <TouchableOpacity onPress={() => onPressCard(item)} style={styles.buyButton}>
               <Text style={styles.buttonText}>View Details</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
-        onEndReached={loadVehicles} // Pagination via CarAPI params (e.g., page=1)
+        onEndReached={loadVehicles}
         onEndReachedThreshold={0.5}
       />
     </View>
   );
 };
 
-// Styles unchanged, with blue searchBar: { backgroundColor: 'white', borderColor: '#007BFF', borderWidth: 1, padding: 10, borderRadius: 8 }
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  searchBar: { backgroundColor: 'white', borderColor: '#007BFF', borderWidth: 1, padding: 10, borderRadius: 8, margin: 10 },
+  loader: { marginVertical: 20 },
+  card: { backgroundColor: '#C0C0C0', margin: 10, borderRadius: 16, padding: 10, shadowColor: '#007BFF', shadowOpacity: 0.5, shadowRadius: 5 },
+  image: { width: '100%', height: 200, borderRadius: 8 },
+  title: { fontSize: 18, color: 'white', fontFamily: 'Roboto', fontWeight: 'bold' },
+  specs: { fontSize: 14, color: 'white' },
+  price: { fontSize: 16, color: 'white', fontWeight: 'bold' },
+  green: { color: '#28A745' },
+  buyButton: { backgroundColor: '#007BFF', padding: 10, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+  buttonText: { color: 'white', fontFamily: 'Roboto' },
+});
+
 export default HomeScreen;
