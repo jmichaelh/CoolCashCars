@@ -1,11 +1,21 @@
 import carla
 import random
 import time
+import requests
 
 # Connect to CARLA server
 client = carla.Client('localhost', 2000)
 client.set_timeout(10.0)
 world = client.get_world()
+
+def get_vehicle_specs(model):
+  response = requests.get(f'https://carapi.app/api/v1/vehicles/search?model={model}')
+  if response.status_code == 200:
+    specs = response.json()[0]  # Assume first match
+    return specs['engine'], specs['transmission']  # Use for sim physics
+    engine, trans = get_vehicle_specs('Camry')
+    vehicle_bp.set_attribute('role_name', 'autonomous')  # Customize with specs
+    # e.g., if 'engine' == '2.5L', set throttle curve accordingly
 
 # Spawn ego vehicle
 blueprint_library = world.get_blueprint_library()
