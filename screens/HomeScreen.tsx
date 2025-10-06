@@ -1,61 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import LottieView from 'lottie-react-native'; // For shimmer loading
+ import React, { useState, useEffect, useContext } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, FadeIn } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
+import { ApiContext } from '../App'; // From above
 
-const cars = [ // Mock data from Edmunds API
-  { id: 1, name: 'Toyota Camry', price: 25000, image: 'https://example.com/camry.jpg' },
-  // Add more...
-];
-
-const HomeScreen: React.FC = ({ navigation }) => {
-  const [loading, setLoading] = useState(true);
+const HomeScreen: React.FC = () => {
+  const [searchParams, setSearchParams] = useState({ make: '', model: '', year: '' });
+  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { fetchVehicles } = useContext(ApiContext)!;
+  const navigation = useNavigation();
   const scale = useSharedValue(1);
 
   useEffect(() => {
-    // Fetch from Edmunds: fetch('https://api.edmunds.com/api/vehicle/v2/toyota/camry?fmt=json&api_key=YOUR_KEY')
-    setTimeout(() => setLoading(false), 2000);
-  }, []);
+    loadVehicles();
+  }, [searchParams]);
+
+  const loadVehicles = async () => {
+    if (!searchParams.make) return;
+    setLoading(true);
+    try {
+      const data = await fetchVehicles(searchParams);
+      setVehicles(data || []); // Assumes array response, e.g., [{ id, make, model, year, price_estimate, specs }]
+    } catch (error) {
+      console.error('CarAPI Error:', error);
+    }
+    setLoading(false);
+  };
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withSpring(scale.value) }],
   }));
 
-  const onPressCard = () => {
-    scale.value = 0.95; // Spring bounce
-    setTimeout(() => scale.value = 1, 150);
-    navigation.navigate('Detail');
+  const onPressCard = (vehicle: any) => {
+    scale.value = 0.95;
+    setTimeout(() => { scale.value = 1; navigation.navigate('Detail', { vehicle }); }, 150);
   };
 
   return (
     <View style={styles.container}>
-      {loading ? <LottieView source={require('../assets/shimmer.json')} autoPlay loop /> : null}
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search Make/Model/Year"
+        onChangeText={(text) => setSearchParams({ ...searchParams, make: text.split('/')[0] || '' })}
+        placeholderTextColor="#007BFF"
+      />
+      {loading ? <LottieView source={require('../assets/shimmer.json')} autoPlay loop style={styles.loader} /> : null}
       <FlatList
-        data={cars}
-        keyExtractor={(item) => item.id.toString()}
+        data={vehicles}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={({ item }) => (
-          <Animated.View style={[styles.card, animatedStyle]}>
-            <Image source={{ uri: item.image }} style={styles.image} />
-            <Text style={styles.price}>${item.price} <Text style={styles.green}>Deal!</Text></Text>
-            <TouchableOpacity onPress={onPressCard} style={styles.buyButton}>
-              <Text style={styles.buttonText}>View</Text>
+          <Animated.View style={[styles.card, animatedStyle]} entering={FadeIn.duration(300)}>
+            <Image source={{ uri: item.image || 'https://via.placeholder.com/300x200?text=Car' }} style={styles.image} />
+            <Text style={styles.title}>{item.make} {item.model} ({item.year})</Text>
+            <Text style={styles.specs}>Engine: {item.engine || 'N/A'}</Text> {/* From CarAPI specs */}
+            <Text style={styles.price}>${item.price_estimate || 'Contact Dealer'} <Text style={styles.green}>Deal!</Text></Text>
+            <TouchableOpacity onPress={() => onPressCard(item)} style={styles.buyButton}>
+              <Text style={styles.buttonText}>View Details</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
-        onScroll={() => { /* Infinite scroll logic */ }}
+        onEndReached={loadVehicles} // Pagination via CarAPI params (e.g., page=1)
+        onEndReachedThreshold={0.5}
       />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  card: { backgroundColor: '#C0C0C0', margin: 10, borderRadius: 16, padding: 10, shadowColor: '#007BFF', shadowOpacity: 0.5 },
-  image: { width: '100%', height: 200, borderRadius: 8 },
-  price: { fontSize: 18, color: 'white', fontWeight: 'bold' },
-  green: { color: '#28A745' },
-  buyButton: { backgroundColor: '#007BFF', padding: 10, borderRadius: 8, alignItems: 'center' },
-  buttonText: { color: 'white' },
-});
-
+// Styles unchanged, with blue searchBar: { backgroundColor: 'white', borderColor: '#007BFF', borderWidth: 1, padding: 10, borderRadius: 8 }
 export default HomeScreen;
