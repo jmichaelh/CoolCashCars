@@ -6,7 +6,7 @@ async function handleRequest(request) {
   const url = new URL(request.url);
 
   // Proxy CarAPI.app requests
-  if (url.pathname.startsWith('/api/vehicles')) {
+  if (url.pathname.startsWith('/api/vehicles') || url.pathname.startsWith('/api/vin')) {
     const apiUrl = `https://carapi.app${url.pathname.replace('/api', '/api/v1')}${url.search}`;
     const response = await fetch(apiUrl, {
       headers: { 'Content-Type': 'application/json' },
@@ -17,6 +17,6 @@ async function handleRequest(request) {
     });
   }
 
-  // Serve static assets from Workers Sites
+  // Serve static assets
   return await fetch(request);
 }
