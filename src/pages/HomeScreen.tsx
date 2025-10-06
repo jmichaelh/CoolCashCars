@@ -18,10 +18,7 @@ const HomePage: React.FC = () => {
     if (!searchParams.make) return;
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/vehicles/search', {
-        params: searchParams,
-        baseURL: '', // Proxied via Workers
-      });
+      const { data } = await axios.get('/api/vehicles', { params: searchParams });
       setVehicles(data || []);
     } catch (error) {
       console.error('CarAPI Error:', error);
