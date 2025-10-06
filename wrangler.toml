@@ -3,6 +3,9 @@ name = "cool-cash-cars"
 main = "worker.js"
 compatibility_date = "2025-10-06"
 
+build = "npm install && npm run build"
+deploy= "npx wrangler deploy"
+
 [site]
 bucket = "./dist" # Vite build output
 
