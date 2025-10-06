@@ -1,0 +1,44 @@
+.container {
+  background-color: #343A40;
+  padding: 20px;
+  min-height: 100vh;
+}
+.hero-image {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.title {
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+.spec-section {
+  padding: 10px;
+}
+.spec-label {
+  color: #28A745;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  margin: 5px 0;
+}
+.ar-button, .buy-button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+}
+.ar-button {
+  background-color: #007BFF;
+}
+.buy-button {
+  background-color: #28A745;
+}
