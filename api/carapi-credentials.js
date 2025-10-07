@@ -1,16 +1,8 @@
-
-CARAPI_SECRET = "c4edcfd468fd058e159b4c92214de076"
-
-CARAPI_TOKEN = "e0bded3b-2d3c-471c-9ce7-ffd21963816a"
-
-// Node.js/Express example - api/carapi-credentials.js
-// This file should be placed on your server and kept secure
-
 import express from ‘express’;
 import dotenv from ‘dotenv’;
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ path: '/../.env' });
 
 const router = express.Router();
 
